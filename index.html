@@ -1,174 +1,119 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Token Tap2Earn</title>
-
-    <!-- Telegram Web Apps SDK -->
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-
-    <!-- Style for the page -->
-    <style>
-        body {
-            text-align: center;
-            font-family: Arial, sans-serif;
-            background-image: url('background.png');
-            background-size: cover;
-            color: #333;
-        }
-        .logo {
-            margin-top: 20px;
-            width: 200px;
-        }
-        #chickenImage {
-            width: 150px;
-            cursor: pointer;
-            margin-top: 20px;
-        }
-        #tokenCount {
-            font-size: 24px;
-            margin-top: 15px;
-        }
-        .button {
-            display: inline-flex;
-            align-items: center;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            margin: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-        .button img {
-            width: 20px;
-            height: 20px;
-            margin-right: 8px;
-        }
-        #dailyReward {
-            background-color: #f39c12;
-            color: white;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chicken Token</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-image: url('background.png');
+      background-size: cover;
+      margin: 0;
+      color: #333;
+    }
+    .container {
+      text-align: center;
+      background-color: rgba(255, 255, 255, 0.8);
+      padding: 20px;
+      border-radius: 8px;
+    }
+    #chickenImage {
+      width: 150px;
+      cursor: pointer;
+    }
+    #tokenCount {
+      font-size: 24px;
+      margin: 10px 0;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #claimDaily, #socialMediaBtn {
+      display: block;
+      width: 80%;
+      margin: 10px auto;
+      font-size: 18px;
+    }
+  </style>
 </head>
 <body>
-    <!-- Logo -->
-    <img src="logo.png" alt="Chicken Token Logo" class="logo">
+  <div class="container">
+    <header>
+      <img src="logo.png" alt="Chicken Token Logo" style="width: 150px; margin-bottom: 20px;">
+      <h1>Chicken Token</h1>
+      <p>Tap the Chicken to Earn Chicken Tokens</p>
+    </header>
+    <main>
+      <img src="chicken.png" id="chickenImage" alt="Chicken Image">
+      <p id="tokenCount">Tokens: 0</p>
+      <button id="claimDaily" onclick="claimDailyReward()">Claim Daily Reward</button>
+      <button id="socialMediaBtn" onclick="followSocialMedia()">
+        Follow Us on Twitter & Telegram for 5000 Tokens
+      </button>
+    </main>
+  </div>
 
-    <!-- Tap to Earn Token Section -->
-    <h1>Tap the Chicken to Earn Chicken Tokens</h1>
-    <img src="chicken.png" alt="Chicken" id="chickenImage">
-    <div id="tokenCount">Tokens: 0</div>
+  <script>
+    // Token ve günlük ödül verileri
+    let tokenCount = 0;
+    let lastClaimDate = localStorage.getItem("lastClaimDate") || null;
 
-    <!-- Level Display -->
-    <div id="levelDisplay">Level: 1</div>
+    // Tavuk tıklama ile token kazanma işlevi
+    document.getElementById('chickenImage').addEventListener('click', () => {
+      tokenCount += 1;
+      document.getElementById('tokenCount').innerText = `Tokens: ${tokenCount}`;
+      localStorage.setItem("tokenCount", tokenCount);  // Token sayısını kaydet
+    });
 
-    <!-- Social Media Rewards Buttons -->
-    <div>
-        <button class="button" id="twitterButton">
-            <img src="twitter_icon.png" alt="Twitter"> Follow on Twitter (5000 $CHICKEN)
-        </button>
-        <button class="button" id="telegramButton">
-            <img src="telegram_icon.png" alt="Telegram"> Join Telegram (5000 $CHICKEN)
-        </button>
-    </div>
+    // Günlük ödül işlevi
+    function claimDailyReward() {
+      const now = new Date();
+      const oneDay = 24 * 60 * 60 * 1000;
 
-    <!-- Daily Reward Button with Timer -->
-    <button class="button" id="dailyReward">Claim Daily Reward</button>
-    <div id="timer" style="font-size: 16px; margin-top: 10px;"></div>
+      if (lastClaimDate && (now - new Date(lastClaimDate) < oneDay)) {
+        alert('You can only claim once every 24 hours.');
+        return;
+      }
 
-    <!-- Script to Handle Functionality -->
-    <script>
-        let tokenCount = 0;
-        let level = 1;
-        const tokenLevels = [10000, 20000, 50000, 100000, 250000, 500000, 1000000, 5000000, 10000000];
-        let twitterClaimed = false;
-        let telegramClaimed = false;
-        let dailyClaimed = false;
-        let countdown = 86400; // 24 hours in seconds
+      tokenCount += 5000;
+      document.getElementById('tokenCount').innerText = `Tokens: ${tokenCount}`;
+      lastClaimDate = now;
+      localStorage.setItem("lastClaimDate", now);
+      localStorage.setItem("tokenCount", tokenCount);
+      alert('You claimed your daily reward!');
+    }
 
-        // Update Token Count Display
-        function updateTokenDisplay() {
-            document.getElementById('tokenCount').innerText = `Tokens: ${tokenCount}`;
-            document.getElementById('levelDisplay').innerText = `Level: ${level}`;
-        }
+    // Sosyal medya bağlantılarını takip etme işlevi
+    function followSocialMedia() {
+      window.open('https://twitter.com/@ChickenSolana', '_blank');
+      window.open('https://t.me/chickensolana', '_blank');
+      if (!localStorage.getItem("socialRewardClaimed")) {
+        tokenCount += 5000;
+        document.getElementById('tokenCount').innerText = `Tokens: ${tokenCount}`;
+        localStorage.setItem("tokenCount", tokenCount);
+        localStorage.setItem("socialRewardClaimed", true);
+        alert("Thanks for following! You've received 5000 tokens.");
+      } else {
+        alert("You have already claimed your social media reward.");
+      }
+    }
 
-        // Function to Tap the Chicken and Earn Tokens
-        document.getElementById('chickenImage').addEventListener('click', () => {
-            tokenCount += 1;
-            updateLevel();
-            updateTokenDisplay();
-        });
-
-        // Check and Update Level Based on Token Count
-        function updateLevel() {
-            for (let i = 0; i < tokenLevels.length; i++) {
-                if (tokenCount >= tokenLevels[i]) {
-                    level = i + 2;
-                } else {
-                    break;
-                }
-            }
-        }
-
-        // Claim Twitter Reward and Redirect
-        document.getElementById('twitterButton').addEventListener('click', () => {
-            if (!twitterClaimed) {
-                window.open('https://twitter.com/@ChickenSolana', '_blank');
-                tokenCount += 5000;
-                twitterClaimed = true;
-                document.getElementById('twitterButton').disabled = true;
-                updateTokenDisplay();
-                alert("Thank you for following us on Twitter!");
-            } else {
-                alert("You've already claimed the Twitter reward.");
-            }
-        });
-
-        // Claim Telegram Reward and Redirect
-        document.getElementById('telegramButton').addEventListener('click', () => {
-            if (!telegramClaimed) {
-                window.open('https://t.me/chickensolana', '_blank');
-                tokenCount += 5000;
-                telegramClaimed = true;
-                document.getElementById('telegramButton').disabled = true;
-                updateTokenDisplay();
-                alert("Thank you for joining our Telegram channel!");
-            } else {
-                alert("You've already claimed the Telegram reward.");
-            }
-        });
-
-        // Claim Daily Reward with Timer
-        document.getElementById('dailyReward').addEventListener('click', () => {
-            if (!dailyClaimed) {
-                tokenCount += 500;
-                dailyClaimed = true;
-                countdown = 86400; // Reset countdown to 24 hours
-                updateTokenDisplay();
-                alert("Daily reward claimed!");
-            } else {
-                alert("Please wait until the timer resets for your next daily reward.");
-            }
-        });
-
-        // Timer Countdown for Daily Reward Reset
-        setInterval(() => {
-            if (dailyClaimed) {
-                countdown--;
-                const hours = Math.floor(countdown / 3600);
-                const minutes = Math.floor((countdown % 3600) / 60);
-                const seconds = countdown % 60;
-                document.getElementById('timer').innerText = `Next reward in: ${hours}h ${minutes}m ${seconds}s`;
-                if (countdown <= 0) {
-                    dailyClaimed = false;
-                    document.getElementById('timer').innerText = "";
-                }
-            }
-        }, 1000);
-    </script>
+    // Telegram Web App entegrasyonu
+    Telegram.WebApp.ready();
+    document.addEventListener("DOMContentLoaded", () => {
+      // Local storage'dan token verisini geri yükle
+      tokenCount = parseInt(localStorage.getItem("tokenCount")) || 0;
+      document.getElementById("tokenCount").innerText = `Tokens: ${tokenCount}`;
+    });
+  </script>
 </body>
 </html>
