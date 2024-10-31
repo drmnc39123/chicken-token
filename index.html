@@ -3,241 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Token - Tap to Earn</title>
-    
-    <!-- Font Awesome Kütüphanesini Ekliyoruz -->
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    
+    <title>Chicken Token Tap2Earn</title>
+
+    <!-- Telegram Web Apps SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <!-- Style for the page -->
     <style>
         body {
-            font-family: Arial, sans-serif;
             text-align: center;
-            background-color: #f8f8f8;
-            background-image: url('background.png');  /* Arka plan resmi */
+            font-family: Arial, sans-serif;
+            background-image: url('background.png');
             background-size: cover;
-            background-position: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            flex-direction: column;
-        }
-        h1 {
             color: #333;
         }
-        #chicken {
+        .logo {
+            margin-top: 20px;
             width: 200px;
+        }
+        #chickenImage {
+            width: 150px;
             cursor: pointer;
             margin-top: 20px;
         }
-        #token-count, #level-display, #daily-reward-info, #countdown-timer {
-            font-size: 20px;
-            color: #555;
-            margin-top: 20px;
+        #tokenCount {
+            font-size: 24px;
+            margin-top: 15px;
         }
-        /* Logo için stil - Boyutu iki katına çıkarıyoruz */
-        #logo {
-            width: 300px; /* Logo genişliği iki katına çıkarıldı */
-            margin-bottom: 20px;
-        }
-        /* Butonlar için stil */
-        .social-button {
+        .button {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 16px;
-            font-weight: bold;
+            background-color: #4CAF50;
             color: white;
             border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 16px;
             border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
+            text-decoration: none;
         }
-        /* Twitter Buton Stili */
-        .twitter-btn {
-            background-color: #1DA1F2;
+        .button img {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
         }
-        .twitter-btn:hover {
-            background-color: #0d8bf0;
-        }
-        /* Telegram Buton Stili */
-        .telegram-btn {
-            background-color: #0088cc;
-        }
-        .telegram-btn:hover {
-            background-color: #007bb5;
-        }
-        /* Günlük Giriş Butonu Stili */
-        #claim-btn {
-            background-color: #4CAF50;
-            padding: 15px 30px;
-            font-size: 18px;
+        #dailyReward {
+            background-color: #f39c12;
             color: white;
-            border-radius: 10px;
-            margin-top: 20px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-        #claim-btn:hover {
-            background-color: #45a049;
-        }
-        #claim-btn:disabled {
-            background-color: gray;
-            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <!-- Logo'yu ekliyoruz -->
-    <img id="logo" src="logo.png" alt="Chicken Token Logo">
+    <!-- Logo -->
+    <img src="logo.png" alt="Chicken Token Logo" class="logo">
 
+    <!-- Tap to Earn Token Section -->
     <h1>Tap the Chicken to Earn Chicken Tokens</h1>
-    <img id="chicken" src="chicken.png" alt="Chicken">
-    <p id="token-count">You have 0 Chicken Tokens.</p>
-    <p id="level-display">Your Level: 1</p> <!-- Level göstergesi eklendi -->
+    <img src="chicken.png" alt="Chicken" id="chickenImage">
+    <div id="tokenCount">Tokens: 0</div>
 
-    <!-- Günlük Giriş Ödül Bilgisi -->
-    <p id="daily-reward-info">Today's Reward: 500 Chicken Tokens</p>
+    <!-- Level Display -->
+    <div id="levelDisplay">Level: 1</div>
 
-    <!-- Claim Button -->
-    <button id="claim-btn" onclick="claimDailyReward()">Claim Your Daily Reward</button>
-    <p id="countdown-timer"></p> <!-- Geri sayım göstergesi -->
-
-    <!-- Sosyal Medya Butonları -->
+    <!-- Social Media Rewards Buttons -->
     <div>
-        <button id="twitter-btn" class="social-button twitter-btn" onclick="followTwitter()">
-            <i class="fab fa-twitter"></i> Follow us on Twitter
-            <span class="bonus-text">+5000 Tokens</span>
+        <button class="button" id="twitterButton">
+            <img src="twitter_icon.png" alt="Twitter"> Follow on Twitter (5000 $CHICKEN)
         </button>
-        <button id="telegram-btn" class="social-button telegram-btn" onclick="joinTelegram()">
-            <i class="fab fa-telegram-plane"></i> Join our Telegram
-            <span class="bonus-text">+5000 Tokens</span>
+        <button class="button" id="telegramButton">
+            <img src="telegram_icon.png" alt="Telegram"> Join Telegram (5000 $CHICKEN)
         </button>
     </div>
 
+    <!-- Daily Reward Button with Timer -->
+    <button class="button" id="dailyReward">Claim Daily Reward</button>
+    <div id="timer" style="font-size: 16px; margin-top: 10px;"></div>
+
+    <!-- Script to Handle Functionality -->
     <script>
         let tokenCount = 0;
         let level = 1;
-        let twitterFollowed = false;
-        let telegramJoined = false;
-        let currentDay = 1;  // Günlük giriş için başlama günü
-        const dailyRewards = [500, 2000, 5000, 10000, 25000, 50000, 100000];  // Günlük ödüller
-        let claimCooldown = 86400;  // 24 saat (saniye cinsinden)
-        let claimable = true;
+        const tokenLevels = [10000, 20000, 50000, 100000, 250000, 500000, 1000000, 5000000, 10000000];
+        let twitterClaimed = false;
+        let telegramClaimed = false;
+        let dailyClaimed = false;
+        let countdown = 86400; // 24 hours in seconds
 
-        // Tavuk resmine tıklama işlevi
-        document.getElementById("chicken").addEventListener("click", function() {
+        // Update Token Count Display
+        function updateTokenDisplay() {
+            document.getElementById('tokenCount').innerText = `Tokens: ${tokenCount}`;
+            document.getElementById('levelDisplay').innerText = `Level: ${level}`;
+        }
+
+        // Function to Tap the Chicken and Earn Tokens
+        document.getElementById('chickenImage').addEventListener('click', () => {
             tokenCount += 1;
-            updateTokenCount();
+            updateLevel();
+            updateTokenDisplay();
         });
 
-        // Günlük ödül kazanma işlevi
-        function claimDailyReward() {
-            if (claimable && currentDay <= 7) {
-                let reward = dailyRewards[currentDay - 1];
-                tokenCount += reward;
-                document.getElementById("daily-reward-info").textContent = `You claimed ${reward} Chicken Tokens!`;
-                currentDay++;
-                if (currentDay <= 7) {
-                    document.getElementById("daily-reward-info").textContent = `Tomorrow's Reward: ${dailyRewards[currentDay - 1]} Chicken Tokens.`;
-                } else {
-                    document.getElementById("daily-reward-info").textContent = "You have claimed all daily rewards!";
-                }
-                updateTokenCount();
-                startCooldown();  // Geri sayım başlat
-            }
-        }
-
-        // Claim butonunu devre dışı bırakma ve geri sayım başlatma
-        function startCooldown() {
-            claimable = false;
-            document.getElementById("claim-btn").disabled = true;
-            let countdown = claimCooldown;
-
-            let countdownInterval = setInterval(function() {
-                countdown--;
-                updateCountdownTimer(countdown);
-
-                if (countdown <= 0) {
-                    clearInterval(countdownInterval);
-                    document.getElementById("claim-btn").disabled = false;
-                    claimable = true;
-                    document.getElementById("countdown-timer").textContent = "";
-                }
-            }, 1000);  // Geri sayım her saniyede bir güncellenir
-        }
-
-        // Geri sayım güncelleme
-        function updateCountdownTimer(seconds) {
-            let hours = Math.floor(seconds / 3600);
-            let minutes = Math.floor((seconds % 3600) / 60);
-            let secs = seconds % 60;
-            document.getElementById("countdown-timer").textContent = `Next claim available in: ${hours}h ${minutes}m ${secs}s`;
-        }
-
-        // Token sayısına göre level belirleme
+        // Check and Update Level Based on Token Count
         function updateLevel() {
-            if (tokenCount >= 10000000) {
-                level = 10;
-            } else if (tokenCount >= 5000000) {
-                level = 9;
-            } else if (tokenCount >= 1000000) {
-                level = 8;
-            } else if (tokenCount >= 500000) {
-                level = 7;
-            } else if (tokenCount >= 250000) {
-                level = 6;
-            } else if (tokenCount >= 100000) {
-                level = 5;
-            } else if (tokenCount >= 50000) {
-                level = 4;
-            } else if (tokenCount >= 20000) {
-                level = 3;
-            } else if (tokenCount >= 10000) {
-                level = 2;
-            } else {
-                level = 1;
+            for (let i = 0; i < tokenLevels.length; i++) {
+                if (tokenCount >= tokenLevels[i]) {
+                    level = i + 2;
+                } else {
+                    break;
+                }
             }
-
-            document.getElementById("level-display").textContent = `Your Level: ${level}`;
         }
 
-        // Token sayısını güncelle
-        function updateTokenCount() {
-            document.getElementById("token-count").textContent = `You have ${tokenCount} Chicken Tokens.`;
-            updateLevel();  // Level'i de güncelle
-        }
-
-        // Twitter takibi sonrası token kazanma
-        function followTwitter() {
-            if (!twitterFollowed) {
-                window.open('https://twitter.com/YOUR_TWITTER_HANDLE', '_blank');
+        // Claim Twitter Reward and Redirect
+        document.getElementById('twitterButton').addEventListener('click', () => {
+            if (!twitterClaimed) {
+                window.open('https://twitter.com/@ChickenSolana', '_blank');
                 tokenCount += 5000;
-                twitterFollowed = true;
-                updateTokenCount();
+                twitterClaimed = true;
+                document.getElementById('twitterButton').disabled = true;
+                updateTokenDisplay();
+                alert("Thank you for following us on Twitter!");
             } else {
-                alert("You have already followed us on Twitter and claimed your reward!");
+                alert("You've already claimed the Twitter reward.");
             }
-        }
+        });
 
-        // Telegram kanalı katılımı sonrası token kazanma
-        function joinTelegram() {
-            if (!telegramJoined) {
-                window.open('https://t.me/YOUR_TELEGRAM_CHANNEL', '_blank');
+        // Claim Telegram Reward and Redirect
+        document.getElementById('telegramButton').addEventListener('click', () => {
+            if (!telegramClaimed) {
+                window.open('https://t.me/chickensolana', '_blank');
                 tokenCount += 5000;
-                telegramJoined = true;
-                updateTokenCount();
+                telegramClaimed = true;
+                document.getElementById('telegramButton').disabled = true;
+                updateTokenDisplay();
+                alert("Thank you for joining our Telegram channel!");
             } else {
-                alert("You have already joined our Telegram and claimed your reward!");
+                alert("You've already claimed the Telegram reward.");
             }
-        }
+        });
+
+        // Claim Daily Reward with Timer
+        document.getElementById('dailyReward').addEventListener('click', () => {
+            if (!dailyClaimed) {
+                tokenCount += 500;
+                dailyClaimed = true;
+                countdown = 86400; // Reset countdown to 24 hours
+                updateTokenDisplay();
+                alert("Daily reward claimed!");
+            } else {
+                alert("Please wait until the timer resets for your next daily reward.");
+            }
+        });
+
+        // Timer Countdown for Daily Reward Reset
+        setInterval(() => {
+            if (dailyClaimed) {
+                countdown--;
+                const hours = Math.floor(countdown / 3600);
+                const minutes = Math.floor((countdown % 3600) / 60);
+                const seconds = countdown % 60;
+                document.getElementById('timer').innerText = `Next reward in: ${hours}h ${minutes}m ${seconds}s`;
+                if (countdown <= 0) {
+                    dailyClaimed = false;
+                    document.getElementById('timer').innerText = "";
+                }
+            }
+        }, 1000);
     </script>
 </body>
 </html>
-
-
-
-
