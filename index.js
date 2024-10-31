@@ -1,112 +1,62 @@
-// index.js
-
 const express = require('express');
-const { MongoClient } = require('mongodb');
-
+const mongoose = require('mongoose');
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
-// MongoDB bağlantı stringi (MongoDB Atlas'tan alınacak)
-const uri = "YOUR_MONGODB_CONNECTION_STRING"; // Buraya kendi MongoDB bağlantı stringinizi ekleyin
-const client = new MongoClient(uri);
+// MongoDB bağlantısı
+mongoose.connect('mongodb+srv://drmncygzhn39:<db_password>@cluster0.r9idc.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+})
+    .then(() => console.log('MongoDB’ye bağlandı'))
+    .catch((error) => console.error('MongoDB bağlantı hatası:', error));
 
-let database, usersCollection;
+// Kullanıcı modeli
+const userSchema = new mongoose.Schema({
+    telegramId: { type: String, required: true, unique: true },
+    tokenCount: { type: Number, default: 0 },
+    level: { type: Number, default: 1 },
+    twitterClaimed: { type: Boolean, default: false },
+    telegramClaimed: { type: Boolean, default: false },
+    dailyClaimedAt: { type: Date, default: null },
+});
+const User = mongoose.model('User', userSchema);
 
-// MongoDB'ye bağlanma
-async function connectToDatabase() {
+// Middleware
+app.use(express.static('public'));
+app.use(express.json());
+
+// Kullanıcıyı veritabanına kaydet veya güncelle
+app.post('/api/saveUserData', async (req, res) => {
+    const { telegramId, tokenCount, level, twitterClaimed, telegramClaimed, dailyClaimedAt } = req.body;
     try {
-        await client.connect();
-        database = client.db('chickenTokenDB'); // Veritabanı adı
-        usersCollection = database.collection('users'); // "users" koleksiyonu
-        console.log('Connected to MongoDB!');
-    } catch (err) {
-        console.error('MongoDB connection error:', err);
+        const user = await User.findOneAndUpdate(
+            { telegramId },
+            { tokenCount, level, twitterClaimed, telegramClaimed, dailyClaimedAt },
+            { upsert: true, new: true }
+        );
+        res.json({ success: true, user });
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Veritabanı hatası.' });
     }
-}
+});
 
-// Kullanıcı verisini veritabanına kaydetme veya güncelleme
-async function saveUserProgress(userId, tokenCount, level) {
-    const filter = { userId: userId };
-    const update = {
-        $set: {
-            tokenCount: tokenCount,
-            level: level,
-            lastUpdated: new Date()
+// Kullanıcı verilerini alma
+app.get('/api/getUserData/:telegramId', async (req, res) => {
+    const { telegramId } = req.params;
+    try {
+        const user = await User.findOne({ telegramId });
+        if (user) {
+            res.json({ success: true, user });
+        } else {
+            res.json({ success: false, error: 'Kullanıcı bulunamadı.' });
         }
-    };
-    const options = { upsert: true }; // Eğer kullanıcı yoksa ekle
-    await usersCollection.updateOne(filter, update, options);
-    console.log(`User ${userId} progress saved.`);
-}
-
-// Kullanıcı verisini veritabanından çekme
-async function getUserProgress(userId) {
-    const user = await usersCollection.findOne({ userId: userId });
-    return user;
-}
-
-// Sunucu başlatıldığında MongoDB'ye bağlan
-connectToDatabase();
-
-// Kullanıcıdan token kazanma ve ilerlemesini kaydetme
-let tokenCount = 0;
-let level = 1;
-
-// Tavuk resmine tıklayınca token kazanma
-app.get('/tap/:userId', async (req, res) => {
-    const userId = req.params.userId;
-
-    // Token ve seviye güncelleniyor
-    tokenCount += 1;
-    updateLevel();
-
-    // İlerlemeyi veritabanına kaydet
-    await saveUserProgress(userId, tokenCount, level);
-    
-    res.send(`You tapped! Token Count: ${tokenCount}, Level: ${level}`);
-});
-
-// Kullanıcı verisini yükleme
-app.get('/load/:userId', async (req, res) => {
-    const userId = req.params.userId;
-
-    const user = await getUserProgress(userId);
-    if (user) {
-        tokenCount = user.tokenCount;
-        level = user.level;
-        res.send(`Progress loaded! Token Count: ${tokenCount}, Level: ${level}`);
-    } else {
-        res.send("No progress found for this user.");
+    } catch (error) {
+        res.status(500).json({ success: false, error: 'Veritabanı hatası.' });
     }
 });
 
-// Token sayısına göre level belirleme
-function updateLevel() {
-    if (tokenCount >= 10000000) {
-        level = 10;
-    } else if (tokenCount >= 5000000) {
-        level = 9;
-    } else if (tokenCount >= 1000000) {
-        level = 8;
-    } else if (tokenCount >= 500000) {
-        level = 7;
-    } else if (tokenCount >= 250000) {
-        level = 6;
-    } else if (tokenCount >= 100000) {
-        level = 5;
-    } else if (tokenCount >= 50000) {
-        level = 4;
-    } else if (tokenCount >= 20000) {
-        level = 3;
-    } else if (tokenCount >= 10000) {
-        level = 2;
-    } else {
-        level = 1;
-    }
-}
-
-// Sunucuyu başlatma
+// Sunucu başlatma
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Sunucu http://localhost:${port} adresinde çalışıyor.`);
 });
-
