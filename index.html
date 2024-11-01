@@ -1,119 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chicken Token</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-image: url('background.png');
-      background-size: cover;
-      margin: 0;
-      color: #333;
-    }
-    .container {
-      text-align: center;
-      background-color: rgba(255, 255, 255, 0.8);
-      padding: 20px;
-      border-radius: 8px;
-    }
-    #chickenImage {
-      width: 150px;
-      cursor: pointer;
-    }
-    #tokenCount {
-      font-size: 24px;
-      margin: 10px 0;
-    }
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-    #claimDaily, #socialMediaBtn {
-      display: block;
-      width: 80%;
-      margin: 10px auto;
-      font-size: 18px;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <header>
-      <img src="logo.png" alt="Chicken Token Logo" style="width: 150px; margin-bottom: 20px;">
-      <h1>Chicken Token</h1>
-      <p>Tap the Chicken to Earn Chicken Tokens</p>
-    </header>
-    <main>
-      <img src="chicken.png" id="chickenImage" alt="Chicken Image">
-      <p id="tokenCount">Tokens: 0</p>
-      <button id="claimDaily" onclick="claimDailyReward()">Claim Daily Reward</button>
-      <button id="socialMediaBtn" onclick="followSocialMedia()">
-        Follow Us on Twitter & Telegram for 5000 Tokens
-      </button>
-    </main>
-  </div>
-
-  <script>
-    // Token ve günlük ödül verileri
-    let tokenCount = 0;
-    let lastClaimDate = localStorage.getItem("lastClaimDate") || null;
-
-    // Tavuk tıklama ile token kazanma işlevi
-    document.getElementById('chickenImage').addEventListener('click', () => {
-      tokenCount += 1;
-      document.getElementById('tokenCount').innerText = `Tokens: ${tokenCount}`;
-      localStorage.setItem("tokenCount", tokenCount);  // Token sayısını kaydet
-    });
-
-    // Günlük ödül işlevi
-    function claimDailyReward() {
-      const now = new Date();
-      const oneDay = 24 * 60 * 60 * 1000;
-
-      if (lastClaimDate && (now - new Date(lastClaimDate) < oneDay)) {
-        alert('You can only claim once every 24 hours.');
-        return;
-      }
-
-      tokenCount += 5000;
-      document.getElementById('tokenCount').innerText = `Tokens: ${tokenCount}`;
-      lastClaimDate = now;
-      localStorage.setItem("lastClaimDate", now);
-      localStorage.setItem("tokenCount", tokenCount);
-      alert('You claimed your daily reward!');
-    }
-
-    // Sosyal medya bağlantılarını takip etme işlevi
-    function followSocialMedia() {
-      window.open('https://twitter.com/@ChickenSolana', '_blank');
-      window.open('https://t.me/chickensolana', '_blank');
-      if (!localStorage.getItem("socialRewardClaimed")) {
-        tokenCount += 5000;
-        document.getElementById('tokenCount').innerText = `Tokens: ${tokenCount}`;
-        localStorage.setItem("tokenCount", tokenCount);
-        localStorage.setItem("socialRewardClaimed", true);
-        alert("Thanks for following! You've received 5000 tokens.");
-      } else {
-        alert("You have already claimed your social media reward.");
-      }
-    }
-
-    // Telegram Web App entegrasyonu
-    Telegram.WebApp.ready();
-    document.addEventListener("DOMContentLoaded", () => {
-      // Local storage'dan token verisini geri yükle
-      tokenCount = parseInt(localStorage.getItem("tokenCount")) || 0;
-      document.getElementById("tokenCount").innerText = `Tokens: ${tokenCount}`;
-    });
-  </script>
-</body>
+  <head>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hamster Kombat Clone</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
