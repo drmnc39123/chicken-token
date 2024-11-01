@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 import Hamster from './icons/Hamster';
-import { binanceLogo, dailyCipher, dailyCombo, dailyReward, dollarCoin, hamsterCoin, mainCharacter } from './images';
+import { binanceLogo, dailyReward, dollarCoin, hamsterCoin, mainCharacter } from './images';
 import Info from './icons/Info';
 import Settings from './icons/Settings';
 import Coins from './icons/Coins';
 
-const getTelegramUsername = () => {
-  if (window.Telegram && window.Telegram.WebApp) {
-    return window.Telegram.WebApp.initDataUnsafe?.user?.username || 'Kullanıcı';
+declare global {
+  interface Window {
+    Telegram?: any;
   }
-  return 'Kullanıcı';
-};
+}
 
 const App: React.FC = () => {
   const levelNames = [
@@ -31,8 +30,6 @@ const App: React.FC = () => {
   const profitPerHour = 0;
 
   const [dailyRewardTimeLeft, setDailyRewardTimeLeft] = useState("");
-  const [dailyCipherTimeLeft, setDailyCipherTimeLeft] = useState("");
-  const [dailyComboTimeLeft, setDailyComboTimeLeft] = useState("");
 
   const calculateTimeLeft = (targetHour: number) => {
     const now = new Date();
@@ -126,7 +123,7 @@ const App: React.FC = () => {
               <Hamster size={24} className="text-[#d4d4d4]" />
             </div>
             <div>
-              <p className="text-sm">Nikandr (CEO)</p>
+              <p className="text-sm">Kullanıcı (CEO)</p>
             </div>
           </div>
           <div className="flex items-center justify-between space-x-4 mt-1">
@@ -162,78 +159,10 @@ const App: React.FC = () => {
 
         <div className="flex-grow mt-4 bg-[#f3ba2f] rounded-t-[48px] relative top-glow z-0">
           <div className="absolute top-[2px] left-0 right-0 bottom-0 bg-[#1d2025] rounded-t-[46px]">
-            <div className="px-4 mt-6 flex justify-between gap-2">
-              <div className="bg-[#272a2f] rounded-lg px-4 py-2 w-full relative">
-                <div className="dot"></div>
-                <img src={dailyReward} alt="Daily Reward" className="mx-auto w-12 h-12" />
-                <p className="text-[10px] text-center text-white mt-1">Daily Reward</p>
-                <p className="text-[10px] font-medium text-center text-gray-400 mt-2">{dailyRewardTimeLeft}</p>
-              </div>
-              <div className="bg-[#272a2f] rounded-lg px-4 py-2 w-full relative">
-                <div className="dot"></div>
-                <img src={dailyCipher} alt="Daily Cipher" className="mx-auto w-12 h-12" />
-                <p className="text-[10px] text-center text-white mt-1">Multitap</p>
-                <p className="text-[10px] font-medium text-center text-gray-400 mt-2">{dailyCipherTimeLeft}</p>
-              </div>
-              <div className="bg-[#272a2f] rounded-lg px-4 py-2 w-full relative">
-                <div className="dot"></div>
-                <img src={dailyCombo} alt="Daily Combo" className="mx-auto w-12 h-12" />
-                <p className="text-[10px] text-center text-white mt-1">Boost</p>
-                <p className="text-[10px] font-medium text-center text-gray-400 mt-2">{dailyComboTimeLeft}</p>
-              </div>
-            </div>
-
-            <div className="px-4 mt-4 flex justify-center">
-              <div className="px-4 py-2 flex items-center space-x-2">
-                <img src={dollarCoin} alt="Dollar Coin" className="w-10 h-10" />
-                <p className="text-4xl text-white">{points.toLocaleString()}</p>
-              </div>
-            </div>
-
-            <div className="px-4 mt-4 flex justify-center">
-              <div
-                className="w-80 h-80 p-4 rounded-full circle-outer"
-                onClick={handleCardClick}
-              >
-                <div className="w-full h-full rounded-full circle-inner">
-                  <img src={mainCharacter} alt="Main Character" className="w-full h-full" />
-                </div>
-              </div>
-            </div>
+            {/* İçerik */}
           </div>
         </div>
       </div>
-
-      {/* Bottom fixed div */}
-<div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 w-auto bg-[#272a2f] flex justify-center items-center z-50 rounded-full text-xs px-2 space-x-4">
-  <div className="text-center text-[#85827d] flex flex-col items-center w-16 p-2 rounded-xl">
-    <img src={binanceLogo} alt="Exchange" className="w-8 h-8 mx-auto" />
-    <p className="mt-1">Exchange</p>
-  </div>
-  <div className="text-center text-[#85827d] flex flex-col items-center w-16 p-2 rounded-xl">
-    <Coins className="w-8 h-8 mx-auto" />
-    <p className="mt-1">Earn</p>
-  </div>
-  <div className="text-center text-[#85827d] flex flex-col items-center w-16 p-2 rounded-xl">
-    <img src={hamsterCoin} alt="Airdrop" className="w-8 h-8 mx-auto" />
-    <p className="mt-1">Airdrop</p>
-  </div>
-</div>
-
-      {clicks.map((click) => (
-        <div
-          key={click.id}
-          className="absolute text-5xl font-bold opacity-0 text-white pointer-events-none"
-          style={{
-            top: `${click.y - 42}px`,
-            left: `${click.x - 28}px`,
-            animation: `float 1s ease-out`
-          }}
-          onAnimationEnd={() => handleAnimationEnd(click.id)}
-        >
-          {pointsToAdd}
-        </div>
-      ))}
     </div>
   );
 };
