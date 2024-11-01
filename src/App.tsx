@@ -6,11 +6,7 @@ import Info from './icons/Info';
 import Settings from './icons/Settings';
 import Coins from './icons/Coins';
 
-declare global {
-  interface Window {
-    Telegram?: any;
-  }
-}
+// Kullanılmayan veya hata veren kodları geçici olarak kaldırıyoruz
 
 const App: React.FC = () => {
   const levelNames = [
